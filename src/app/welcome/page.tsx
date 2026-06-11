@@ -1,12 +1,10 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import { createClient } from '@/lib/supabase/server';
 import ProfileForm from './ProfileForm';
+import { getDict } from '@/lib/i18n/server';
+import { createClient } from '@/lib/supabase/server';
 
-export const metadata: Metadata = {
-  title: 'Set up your profile',
-  description: 'Tell buyers who you are and where to WhatsApp you.',
-};
+export const metadata: Metadata = { title: 'Set up your profile' };
 
 export default async function WelcomePage({
   searchParams,
@@ -14,6 +12,7 @@ export default async function WelcomePage({
   searchParams: Promise<{ next?: string }>;
 }) {
   const { next } = await searchParams;
+  const { dict } = await getDict();
   const supabase = await createClient();
   const {
     data: { user },
@@ -30,11 +29,8 @@ export default async function WelcomePage({
   return (
     <div className="panel-wrap">
       <div className="panel">
-        <h1>Almost in</h1>
-        <p className="sub">
-          Last step: tell buyers who you are and where to WhatsApp you. This is what shows up
-          next to your listings.
-        </p>
+        <h1>{dict.welcome.title}</h1>
+        <p className="sub">{dict.welcome.sub}</p>
         <ProfileForm next={next && next.startsWith('/') ? next : '/post'} />
       </div>
     </div>

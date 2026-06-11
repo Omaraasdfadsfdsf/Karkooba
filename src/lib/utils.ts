@@ -1,7 +1,13 @@
 import { STORAGE_BUCKET } from './constants';
+import type { Dict } from './i18n/dictionaries';
 
 export function fmtPrice(priceAed: number): string {
   return priceAed === 0 ? 'FREE' : `AED ${priceAed}`;
+}
+
+/** Locale-aware price label, e.g. "AED 30" / "د.إ 30" / "FREE" / "مجاناً". */
+export function fmtPriceL(priceAed: number, dict: Dict): string {
+  return priceAed === 0 ? dict.card.free : `${dict.card.aed} ${priceAed}`;
 }
 
 /** URL-safe slug from a listing title, e.g. "Desk fan — loud!" -> "desk-fan-loud" */
@@ -46,11 +52,18 @@ export function listingPath(id: string, title: string): string {
   return `/listing/${id}/${slugify(title)}`;
 }
 
-export function fmtDate(iso: string): string {
-  return new Date(iso).toLocaleDateString('en-AE', {
+export function fmtDate(iso: string, locale: 'en' | 'ar' = 'en'): string {
+  return new Date(iso).toLocaleDateString(locale === 'ar' ? 'ar-AE' : 'en-AE', {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
+  });
+}
+
+export function fmtTime(iso: string, locale: 'en' | 'ar' = 'en'): string {
+  return new Date(iso).toLocaleTimeString(locale === 'ar' ? 'ar-AE' : 'en-AE', {
+    hour: 'numeric',
+    minute: '2-digit',
   });
 }
 

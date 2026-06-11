@@ -1,18 +1,22 @@
 # KARKOOBA · كركوبة
 
-**One man's junk, another man's jackpot.** A UAE classifieds board for cheap secondhand
-finds — everything under AED 999, sellers reachable in one tap on WhatsApp.
+**Everything deserves a second life.** The UAE's marketplace for pre-loved finds —
+everything under AED 999, with real-time in-site chat between buyers and sellers.
 
 Built with Next.js (App Router) + TypeScript + Tailwind CSS, backed by Supabase
-(Postgres, Auth, Storage). Deploys to Vercel.
+(Postgres, Auth, Storage, Realtime). Deploys to Vercel.
 
 ## Features
 
 - Listing grid with full-text search, category chips, emirate filter, newest/cheapest sort
 - Live ticker of the 8 newest listings
-- Listing detail pages with photo gallery, rotated price sticker, and a
-  "WhatsApp the seller" button with a pre-filled message
+- Listing detail pages with photo gallery and two contact channels:
+  real-time in-site chat (primary) and WhatsApp with a pre-filled message (secondary)
+- In-site messaging: per-listing conversations, live delivery via Supabase Realtime,
+  read receipts, unread badge in the header
 - Email + password auth; first login collects display name, WhatsApp number, and emirate
+- Profile menu and Settings page (edit profile, switch language)
+- Full English / Arabic interface with right-to-left layout support
 - Post listings with up to 4 photos, compressed client-side to max 1200px before upload
 - My Listings page: mark sold, relist, delete
 - Server-side validation of everything (price range, lengths, phone format), enforced
@@ -28,6 +32,11 @@ Built with Next.js (App Router) + TypeScript + Tailwind CSS, backed by Supabase
 3. Paste the entire contents of [`supabase/migrations/0001_init.sql`](supabase/migrations/0001_init.sql)
    and click **Run**. This creates the tables, enums, RLS policies, and the public
    `listing-photos` storage bucket.
+4. Run [`supabase/migrations/0002_chat.sql`](supabase/migrations/0002_chat.sql) the same
+   way. This adds the chat tables (`conversations`, `messages`), their RLS policies,
+   read receipts, and enables Realtime delivery for messages.
+5. Run [`supabase/migrations/0003_condition.sql`](supabase/migrations/0003_condition.sql)
+   the same way. This adds the item condition field (Like new / Good / Well used / For parts).
 4. Grab your credentials from **Project Settings → API**:
    - **Project URL** → `NEXT_PUBLIC_SUPABASE_URL`
    - **anon / public key** → `NEXT_PUBLIC_SUPABASE_ANON_KEY`
@@ -63,8 +72,14 @@ Open <http://localhost:3000>. Sign up, fill in your profile, post that dusty fan
 | Variable | What it is |
 | --- | --- |
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase **Project URL**, e.g. `https://abcd.supabase.co` |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase **anon/public** API key (never the `service_role` key) |
-| `NEXT_PUBLIC_SITE_URL` | Canonical URL for SEO/OG tags. `http://localhost:3000` locally, your Vercel URL in production |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase **anon/public** API key |
+| `NEXT_PUBLIC_SITE_URL` | Canonical URL for SEO/OG tags and email links. `http://localhost:3000` locally, your domain in production |
+| `SUPABASE_SERVICE_ROLE_KEY` | *(optional)* Supabase **service_role** key — server-only, enables chat email notifications |
+| `RESEND_API_KEY` | *(optional)* [Resend](https://resend.com) API key for sending those emails (free tier) |
+| `EMAIL_FROM` | *(optional)* Verified sender, e.g. `KARKOOBA <hello@your-domain.com>` |
+
+Chat email notifications require both `SUPABASE_SERVICE_ROLE_KEY` and `RESEND_API_KEY`.
+Without them the app runs normally — recipients just aren't emailed about new messages.
 
 ## 3. Deploy to Vercel
 

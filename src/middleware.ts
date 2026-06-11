@@ -29,7 +29,12 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const path = request.nextUrl.pathname;
-  const needsAuth = path.startsWith('/post') || path.startsWith('/my-listings') || path.startsWith('/welcome');
+  const needsAuth =
+    path.startsWith('/post') ||
+    path.startsWith('/my-listings') ||
+    path.startsWith('/welcome') ||
+    path.startsWith('/messages') ||
+    path.startsWith('/settings');
   if (needsAuth && !user) {
     const url = request.nextUrl.clone();
     url.pathname = '/login';

@@ -1,58 +1,71 @@
 import type { Metadata } from 'next';
-import { Archivo_Black, Space_Grotesk, Cairo } from 'next/font/google';
+import { Unbounded, Space_Grotesk, Cairo } from 'next/font/google';
 import Header from '@/components/Header';
+import { I18nProvider } from '@/components/I18nProvider';
+import { getDict } from '@/lib/i18n/server';
 import { siteUrl } from '@/lib/utils';
 import './globals.css';
 
-const archivoBlack = Archivo_Black({
-  weight: '400',
+const unbounded = Unbounded({
+  weight: ['500', '600', '700'],
   subsets: ['latin'],
   variable: '--font-display',
 });
 
 const spaceGrotesk = Space_Grotesk({
-  weight: ['400', '500', '700'],
+  weight: ['400', '500', '600', '700'],
   subsets: ['latin'],
   variable: '--font-body',
 });
 
 const cairo = Cairo({
-  weight: '700',
-  subsets: ['arabic'],
+  weight: ['400', '600', '700'],
+  subsets: ['arabic', 'latin'],
   variable: '--font-arabic',
 });
 
-export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl()),
-  title: {
-    default: "KARKOOBA — One man's junk, another man's jackpot",
-    template: '%s · KARKOOBA',
-  },
-  description:
-    "The UAE's classifieds board for cheap secondhand finds. Everything under AED 999 — fans with personality, chairs with history, cables from civilizations unknown.",
-  openGraph: {
-    siteName: 'KARKOOBA',
-    type: 'website',
-    locale: 'en_AE',
-    title: "KARKOOBA — One man's junk, another man's jackpot",
-    description:
-      "The UAE's classifieds board for cheap secondhand finds. Everything under AED 999.",
-  },
-  twitter: {
-    card: 'summary_large_image',
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { dict } = await getDict();
+  return {
+    metadataBase: new URL(siteUrl()),
+    title: {
+      default: dict.meta.title,
+      template: '%s · KARKOOBA',
+    },
+    description: dict.meta.description,
+    openGraph: {
+      siteName: 'KARKOOBA',
+      type: 'website',
+      locale: 'en_AE',
+      title: dict.meta.title,
+      description: dict.meta.description,
+    },
+    twitter: {
+      card: 'summary_large_image',
+    },
+  };
+}
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const { dict, locale } = await getDict();
+
   return (
-    <html lang="en">
-      <body className={`${archivoBlack.variable} ${spaceGrotesk.variable} ${cairo.variable}`}>
-        <Header />
-        {children}
-        <footer className="site-footer">
-          <b>KARKOOBA</b> · كركوبة · Where the UAE&apos;s forgotten things find new homes.
-          Nothing here is fancy — that&apos;s the point.
-        </footer>
+    <html lang={locale} dir={locale === 'ar' ? 'rtl' : 'ltr'}>
+      <body className={`${unbounded.variable} ${spaceGrotesk.variable} ${cairo.variable}`}>
+        <I18nProvider dict={dict} locale={locale}>
+          <Header />
+          {children}
+          <footer className="site-footer">
+            <p>
+              <b>KARKOOBA</b> · كركوبة — {dict.footer.line}
+            </p>
+            <p style={{ marginTop: 10, display: 'flex', gap: 18, justifyContent: 'center', flexWrap: 'wrap' }}>
+              <a href="/terms">{dict.footer.terms}</a>
+              <a href="/privacy">{dict.footer.privacy}</a>
+              <a href="/safety">{dict.footer.safety}</a>
+            </p>
+          </footer>
+        </I18nProvider>
       </body>
     </html>
   );

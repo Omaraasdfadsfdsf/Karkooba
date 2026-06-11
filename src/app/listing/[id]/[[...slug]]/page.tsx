@@ -1,10 +1,20 @@
 import type { Metadata } from 'next';
 import { notFound, redirect } from 'next/navigation';
+import Icon from '@/components/Icon';
 import PhotoGallery from '@/components/PhotoGallery';
-import { categoryEmoji, categoryLabel } from '@/lib/constants';
+import { startConversation } from '@/app/actions/chat';
+import { t } from '@/lib/i18n/dictionaries';
+import { getDict } from '@/lib/i18n/server';
 import { createClient } from '@/lib/supabase/server';
 import type { ListingWithSeller } from '@/lib/types';
-import { fmtDate, fmtPrice, listingPath, photoUrl, slugify, whatsAppLink } from '@/lib/utils';
+import {
+  fmtDate,
+  fmtPrice,
+  fmtPriceL,
+  listingPath,
+  photoUrl,
+  slugify,
+} from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
 
@@ -40,7 +50,7 @@ export async function generateMetadata({
 
   const photos = [...listing.listing_photos].sort((a, b) => a.position - b.position);
   const description = `${fmtPrice(listing.price_aed)} · ${listing.emirate} · ${
-    listing.description?.slice(0, 150) || 'No description. It is what it is.'
+    listing.description?.slice(0, 150) || 'Pre-loved find on KARKOOBA.'
   }`;
 
   return {
@@ -65,11 +75,11 @@ export default async function ListingPage({
 }) {
   const { id, slug } = await params;
   const { posted } = await searchParams;
+  const { dict, locale } = await getDict();
 
   const listing = await fetchListing(id);
   if (!listing) notFound();
 
-  // Canonical URL: /listing/<id>/<slug-of-title>
   const canonicalSlug = slugify(listing.title);
   if (!slug || slug[0] !== canonicalSlug) {
     redirect(listingPath(listing.id, listing.title) + (posted ? '?posted=1' : ''));
@@ -86,51 +96,74 @@ export default async function ListingPage({
     .map((p) => ({ url: photoUrl(p.storage_path), alt: listing.title }));
 
   const seller = listing.profiles;
+  const startThisConversation = startConversation.bind(null, listing.id);
+  const waText = encodeURIComponent(
+    t(dict.detail.waText, { title: listing.title, price: fmtPriceL(listing.price_aed, dict) })
+  );
 
   return (
     <div className="panel-wrap">
       <div className="panel wide">
         {posted && (
-          <p className="form-success" style={{ marginTop: 0, marginBottom: 16 }}>
-            Posted! Your karkooba is live 🎉 Share it around — junk moves fast.
+          <p className="form-success" style={{ marginTop: 0, marginBottom: 18 }}>
+            {dict.detail.posted}
           </p>
         )}
-        {listing.status === 'sold' && (
-          <div className="sold-banner">Sold! This one found a new home.</div>
-        )}
+        {listing.status === 'sold' && <div className="sold-banner">{dict.detail.soldBanner}</div>}
 
-        <PhotoGallery photos={photos} fallbackEmoji={categoryEmoji(listing.category)} />
+        <div className="detail-layout">
+          <PhotoGallery photos={photos} />
 
-        <h1 style={{ marginTop: 16 }}>{listing.title}</h1>
-        <div style={{ margin: '12px 0' }}>
-          <span className={`detail-price ${listing.price_aed === 0 ? 'free' : ''}`}>
-            {fmtPrice(listing.price_aed)}
-          </span>
-        </div>
-        <div className="detail-meta">
-          {listing.emirate} · {categoryLabel(listing.category)} · Listed{' '}
-          {fmtDate(listing.created_at)}
-          {seller ? <> · by {seller.display_name}</> : null}
-        </div>
-        <div className="detail-desc">
-          {listing.description || 'No description. It is what it is.'}
-        </div>
+          <div>
+            <h1>{listing.title}</h1>
+            <div style={{ margin: '14px 0' }}>
+              <span className={`detail-price ${listing.price_aed === 0 ? 'free' : ''}`}>
+                {fmtPriceL(listing.price_aed, dict)}
+              </span>
+            </div>
+            <div className="detail-meta">
+              {dict.emirates[listing.emirate] ?? listing.emirate} ·{' '}
+              {dict.categories[listing.category] ?? listing.category}
+              {listing.condition ? <> · {dict.conditions[listing.condition]}</> : null} ·{' '}
+              {dict.detail.listed} {fmtDate(listing.created_at, locale)}
+              {seller ? (
+                <>
+                  {' '}
+                  · {dict.detail.by}{' '}
+                  <a href={`/seller/${listing.owner_id}`} style={{ color: 'var(--purple)' }}>
+                    {seller.display_name}
+                  </a>
+                </>
+              ) : null}
+            </div>
+            <div className="detail-desc">
+              {listing.description || dict.detail.noDescription}
+            </div>
 
-        {listing.status === 'active' && seller && !isMine && (
-          <a
-            className="btn-wa"
-            href={whatsAppLink(seller.phone, listing.title, listing.price_aed)}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            💬 WhatsApp the seller
-          </a>
-        )}
-        {isMine && (
-          <p className="panel-note">
-            This is your listing. Manage it from <a href="/my-listings">My listings</a>.
-          </p>
-        )}
+            {listing.status === 'active' && seller && !isMine && (
+              <>
+                <form action={startThisConversation}>
+                  <button type="submit" className="btn-chat">
+                    <Icon name="chat" /> {user ? dict.detail.message : dict.chat.loginToChat}
+                  </button>
+                </form>
+                <a
+                  className="btn-wa"
+                  href={`https://wa.me/${seller.phone}?text=${waText}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Icon name="whatsapp" size={16} /> {dict.detail.whatsapp}
+                </a>
+              </>
+            )}
+            {isMine && (
+              <p className="panel-note" style={{ textAlign: 'start' }}>
+                {dict.detail.yourListing} <a href="/my-listings">{dict.nav.myListings}</a>.
+              </p>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

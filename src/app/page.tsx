@@ -1,9 +1,11 @@
 import FilterBar from '@/components/FilterBar';
 import ListingCard from '@/components/ListingCard';
-import { categoryEmoji, isCategory, isEmirate } from '@/lib/constants';
+import Icon from '@/components/Icon';
+import { isCategory, isEmirate } from '@/lib/constants';
+import { getDict } from '@/lib/i18n/server';
 import { createClient } from '@/lib/supabase/server';
 import type { ListingWithPhotos } from '@/lib/types';
-import { fmtPrice } from '@/lib/utils';
+import { fmtPriceL } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,6 +22,7 @@ export default async function HomePage({
   searchParams: Promise<HomeSearchParams>;
 }) {
   const sp = await searchParams;
+  const { dict } = await getDict();
   const q = (sp.q ?? '').trim();
   const cat = sp.cat && isCategory(sp.cat) ? sp.cat : '';
   const emirate = sp.emirate && isEmirate(sp.emirate) ? sp.emirate : '';
@@ -59,7 +62,7 @@ export default async function HomePage({
       .limit(1),
     supabase
       .from('listings')
-      .select('title, price_aed, emirate, category')
+      .select('title, price_aed, emirate')
       .eq('status', 'active')
       .order('created_at', { ascending: false })
       .limit(8),
@@ -79,11 +82,12 @@ export default async function HomePage({
               {tickerItems.length > 0 ? (
                 tickerItems.map((t, i) => (
                   <span key={i}>
-                    {categoryEmoji(t.category)} {t.title} — {fmtPrice(t.price_aed)} ({t.emirate})
+                    {t.title} — <b className="tick-price">{fmtPriceL(t.price_aed, dict)}</b> ·{' '}
+                    {dict.emirates[t.emirate] ?? t.emirate}
                   </span>
                 ))
               ) : (
-                <span>Be the first to list something →</span>
+                <span>{dict.ticker.empty}</span>
               )}
             </span>
           ))}
@@ -92,25 +96,21 @@ export default async function HomePage({
 
       <section className="hero">
         <div>
-          <h2>
-            One man&apos;s junk.
+          <h1>
+            {dict.hero.title1}
             <br />
-            Another man&apos;s <span className="stamp">jackpot.</span>
-          </h2>
-          <p>
-            That dusty thing in your storage room? Someone in the UAE actually wants it. List it
-            for cheap, free up space, make a few dirhams. Everything here is under-loved and
-            over-discounted.
-          </p>
+            <span className="grad-text">{dict.hero.title2}</span>
+          </h1>
+          <p>{dict.hero.sub}</p>
         </div>
         <div className="hero-stats">
           <div className="stat-tag">
             <b>{totalActive}</b>
-            <small>items listed</small>
+            <small>{dict.hero.statItems}</small>
           </div>
           <div className="stat-tag">
-            <b>{cheapest === null ? '—' : fmtPrice(cheapest)}</b>
-            <small>cheapest find</small>
+            <b>{cheapest === null ? '—' : fmtPriceL(cheapest, dict)}</b>
+            <small>{dict.hero.statCheapest}</small>
           </div>
         </div>
       </section>
@@ -120,17 +120,20 @@ export default async function HomePage({
       <main className="listing-grid" aria-live="polite">
         {listings.length === 0 ? (
           <div className="empty">
-            <div className="big">🕳️</div>
-            <h3>Nothing in this pile</h3>
-            <p>
-              {hasFilters
-                ? 'No items match. Try another category — or be the first to list one.'
-                : 'The board is empty. That broken thing in your closet is waiting for its moment.'}
-            </p>
+            <div className="big">
+              <Icon name="box" size={28} />
+            </div>
+            <h3>{dict.empty.title}</h3>
+            <p>{hasFilters ? dict.empty.filtered : dict.empty.fresh}</p>
           </div>
         ) : (
           listings.map((listing) => (
-            <ListingCard key={listing.id} listing={listing} isMine={user?.id === listing.owner_id} />
+            <ListingCard
+              key={listing.id}
+              listing={listing}
+              dict={dict}
+              isMine={user?.id === listing.owner_id}
+            />
           ))
         )}
       </main>

@@ -3,6 +3,7 @@ import {
   MAX_PRICE_AED,
   MAX_TITLE,
   isCategory,
+  isCondition,
   isEmirate,
 } from './constants';
 import { normalizeUaePhone } from './utils';
@@ -13,6 +14,7 @@ export interface ListingInput {
   price_aed: number;
   category: string;
   emirate: string;
+  condition: string;
 }
 
 /** Shared by the post form (client) and the server action. Returns an error message or null. */
@@ -28,6 +30,7 @@ export function validateListing(input: ListingInput): string | null {
   }
   if (!isCategory(input.category)) return 'Pick a category for your treasure.';
   if (!isEmirate(input.emirate)) return 'Which emirate is it gathering dust in?';
+  if (!isCondition(input.condition)) return 'Tell buyers what condition it is in.';
   if (input.description.trim().length > MAX_DESCRIPTION) {
     return `Description is over ${MAX_DESCRIPTION} characters. We admire the honesty, but trim it down.`;
   }

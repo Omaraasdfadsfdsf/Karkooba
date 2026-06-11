@@ -1,4 +1,4 @@
-import type { CategoryId, Emirate } from './constants';
+import type { CategoryId, Condition, Emirate } from './constants';
 
 export type ListingStatus = 'active' | 'sold' | 'deleted';
 
@@ -25,6 +25,7 @@ export interface Listing {
   price_aed: number;
   category: CategoryId;
   emirate: Emirate;
+  condition: Condition;
   status: ListingStatus;
   created_at: string;
 }

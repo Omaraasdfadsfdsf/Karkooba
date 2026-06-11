@@ -22,6 +22,14 @@ export const EMIRATES = [
 
 export type Emirate = (typeof EMIRATES)[number];
 
+export const CONDITIONS = ['like_new', 'good', 'worn', 'parts'] as const;
+
+export type Condition = (typeof CONDITIONS)[number];
+
+export function isCondition(value: string): value is Condition {
+  return (CONDITIONS as readonly string[]).includes(value);
+}
+
 export const MAX_PHOTOS = 4;
 export const MAX_TITLE = 60;
 export const MAX_DESCRIPTION = 500;

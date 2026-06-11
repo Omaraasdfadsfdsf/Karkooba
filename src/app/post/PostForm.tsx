@@ -2,8 +2,11 @@
 
 import { useRef, useState } from 'react';
 import { createListing } from '@/app/actions/listings';
+import Icon from '@/components/Icon';
+import { useI18n } from '@/components/I18nProvider';
 import { compressImage } from '@/lib/compressImage';
-import { CATEGORIES, EMIRATES, MAX_DESCRIPTION, MAX_PHOTOS, MAX_TITLE } from '@/lib/constants';
+import { CATEGORIES, CONDITIONS, EMIRATES, MAX_DESCRIPTION, MAX_PHOTOS, MAX_TITLE } from '@/lib/constants';
+import { t } from '@/lib/i18n/dictionaries';
 import { validateListing } from '@/lib/validation';
 
 interface PendingPhoto {
@@ -12,9 +15,11 @@ interface PendingPhoto {
 }
 
 export default function PostForm({ defaultEmirate }: { defaultEmirate: string }) {
+  const { dict } = useI18n();
   const [title, setTitle] = useState('');
   const [price, setPrice] = useState('');
   const [category, setCategory] = useState('');
+  const [condition, setCondition] = useState('good');
   const [emirate, setEmirate] = useState(defaultEmirate);
   const [description, setDescription] = useState('');
   const [photos, setPhotos] = useState<PendingPhoto[]>([]);
@@ -29,10 +34,7 @@ export default function PostForm({ defaultEmirate }: { defaultEmirate: string })
     if (files.length === 0) return;
 
     const room = MAX_PHOTOS - photos.length;
-    if (room <= 0) {
-      setError(`Four photos max. It's karkooba, not a museum exhibit.`);
-      return;
-    }
+    if (room <= 0) return;
     setError(null);
     setCompressing(true);
     const added: PendingPhoto[] = [];
@@ -42,7 +44,7 @@ export default function PostForm({ defaultEmirate }: { defaultEmirate: string })
         const compressed = await compressImage(file);
         added.push({ file: compressed, previewUrl: URL.createObjectURL(compressed) });
       } catch {
-        setError(`Couldn't read "${file.name}" — try a regular JPEG or PNG.`);
+        setError(`Couldn't read "${file.name}".`);
       }
     }
     setPhotos((prev) => [...prev, ...added]);
@@ -65,6 +67,7 @@ export default function PostForm({ defaultEmirate }: { defaultEmirate: string })
       price_aed: priceNum,
       category,
       emirate,
+      condition,
     });
     if (clientError) {
       setError(clientError);
@@ -78,6 +81,7 @@ export default function PostForm({ defaultEmirate }: { defaultEmirate: string })
     fd.set('price_aed', String(priceNum));
     fd.set('category', category);
     fd.set('emirate', emirate);
+    fd.set('condition', condition);
     fd.set('description', description.trim());
     photos.forEach((p) => fd.append('photos', p.file));
 
@@ -91,7 +95,7 @@ export default function PostForm({ defaultEmirate }: { defaultEmirate: string })
     } catch (err) {
       // Next.js redirects surface as a thrown error — let those through.
       if (err instanceof Error && err.message.includes('NEXT_REDIRECT')) throw err;
-      setError('Could not post right now. Check your connection and try again.');
+      setError(dict.auth.loginFailed);
       setBusy(false);
     }
   }
@@ -99,19 +103,19 @@ export default function PostForm({ defaultEmirate }: { defaultEmirate: string })
   return (
     <form onSubmit={onSubmit}>
       <div className="field">
-        <label htmlFor="title">What is it?</label>
+        <label htmlFor="title">{dict.post.itemTitle}</label>
         <input
           id="title"
           maxLength={MAX_TITLE}
           required
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="e.g. Old desk fan — loud but loyal"
+          placeholder={dict.post.itemTitlePh}
         />
       </div>
       <div className="row2">
         <div className="field">
-          <label htmlFor="price">Price (AED) — 0 = free</label>
+          <label htmlFor="price">{dict.post.price}</label>
           <input
             id="price"
             type="number"
@@ -122,10 +126,11 @@ export default function PostForm({ defaultEmirate }: { defaultEmirate: string })
             value={price}
             onChange={(e) => setPrice(e.target.value)}
             placeholder="15"
+            dir="ltr"
           />
         </div>
         <div className="field">
-          <label htmlFor="category">Category</label>
+          <label htmlFor="category">{dict.post.category}</label>
           <select
             id="category"
             required
@@ -133,28 +138,45 @@ export default function PostForm({ defaultEmirate }: { defaultEmirate: string })
             onChange={(e) => setCategory(e.target.value)}
           >
             <option value="" disabled>
-              Pick one
+              {dict.welcome.pickOne}
             </option>
             {CATEGORIES.map((c) => (
               <option key={c.id} value={c.id}>
-                {c.emoji} {c.label}
+                {dict.categories[c.id]}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+      <div className="row2">
+        <div className="field">
+          <label htmlFor="condition">{dict.post.condition}</label>
+          <select
+            id="condition"
+            required
+            value={condition}
+            onChange={(e) => setCondition(e.target.value)}
+          >
+            {CONDITIONS.map((c) => (
+              <option key={c} value={c}>
+                {dict.conditions[c]}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="field">
+          <label htmlFor="emirate">{dict.post.emirate}</label>
+          <select id="emirate" required value={emirate} onChange={(e) => setEmirate(e.target.value)}>
+            {EMIRATES.map((e) => (
+              <option key={e} value={e}>
+                {dict.emirates[e]}
               </option>
             ))}
           </select>
         </div>
       </div>
       <div className="field">
-        <label htmlFor="emirate">Emirate</label>
-        <select id="emirate" required value={emirate} onChange={(e) => setEmirate(e.target.value)}>
-          {EMIRATES.map((e) => (
-            <option key={e} value={e}>
-              {e}
-            </option>
-          ))}
-        </select>
-      </div>
-      <div className="field">
-        <label>Photos (up to {MAX_PHOTOS})</label>
+        <label>{dict.post.photos}</label>
         <div
           className="photo-drop"
           role="button"
@@ -167,11 +189,12 @@ export default function PostForm({ defaultEmirate }: { defaultEmirate: string })
             }
           }}
         >
+          <Icon name="camera" size={18} />
           {compressing
-            ? '📷 Shrinking your photos…'
+            ? dict.post.compressing
             : photos.length === 0
-              ? '📷 Add photos — honest angles sell faster'
-              : `📷 ${photos.length}/${MAX_PHOTOS} added — tap to add more`}
+              ? dict.post.addPhotos
+              : t(dict.post.photosAdded, { n: photos.length, max: MAX_PHOTOS })}
         </div>
         <input
           ref={fileInputRef}
@@ -191,7 +214,7 @@ export default function PostForm({ defaultEmirate }: { defaultEmirate: string })
                   type="button"
                   className="rm"
                   onClick={() => removePhoto(i)}
-                  aria-label={`Remove photo ${i + 1}`}
+                  aria-label={dict.post.removePhoto}
                 >
                   ✕
                 </button>
@@ -201,21 +224,19 @@ export default function PostForm({ defaultEmirate }: { defaultEmirate: string })
         )}
       </div>
       <div className="field">
-        <label htmlFor="description">Honest description (flaws welcome)</label>
+        <label htmlFor="description">{dict.post.description}</label>
         <textarea
           id="description"
           maxLength={MAX_DESCRIPTION}
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          placeholder="Missing one wheel. Squeaks in a friendly way. Pickup only."
+          placeholder={dict.post.descriptionPh}
         />
-        <p className="hint">
-          {MAX_DESCRIPTION - description.length} characters left
-        </p>
+        <p className="hint">{t(dict.post.charsLeft, { n: MAX_DESCRIPTION - description.length })}</p>
       </div>
       {error && <p className="form-error">{error}</p>}
       <button type="submit" className="btn-primary" disabled={busy || compressing}>
-        {busy ? 'Posting…' : 'Post it →'}
+        {busy ? dict.post.submitting : dict.post.submit}
       </button>
     </form>
   );

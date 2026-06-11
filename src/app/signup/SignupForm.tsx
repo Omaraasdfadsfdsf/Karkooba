@@ -3,9 +3,11 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { useI18n } from '@/components/I18nProvider';
 import { createClient } from '@/lib/supabase/client';
 
 export default function SignupForm() {
+  const { dict } = useI18n();
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -16,7 +18,7 @@ export default function SignupForm() {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (password.length < 8) {
-      setError('Make the password at least 8 characters. Junk is cheap, security is not.');
+      setError(dict.auth.passwordShort);
       return;
     }
     setBusy(true);
@@ -48,13 +50,9 @@ export default function SignupForm() {
     return (
       <div>
         <p className="form-success">
-          📬 Almost there! We sent a confirmation link to <b>{email}</b>. Click it and
-          you&apos;re in.
+          {dict.auth.checkInbox} <b dir="ltr">{email}</b>. {dict.auth.checkInboxTail}
         </p>
-        <p className="panel-note">
-          Nothing arrived? Check the spam folder — even emails end up in the junk pile
-          sometimes.
-        </p>
+        <p className="panel-note">{dict.auth.checkSpam}</p>
       </div>
     );
   }
@@ -62,7 +60,7 @@ export default function SignupForm() {
   return (
     <form onSubmit={onSubmit}>
       <div className="field">
-        <label htmlFor="email">Email</label>
+        <label htmlFor="email">{dict.auth.email}</label>
         <input
           id="email"
           type="email"
@@ -71,10 +69,11 @@ export default function SignupForm() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="you@example.com"
+          dir="ltr"
         />
       </div>
       <div className="field">
-        <label htmlFor="password">Password</label>
+        <label htmlFor="password">{dict.auth.password}</label>
         <input
           id="password"
           type="password"
@@ -83,15 +82,16 @@ export default function SignupForm() {
           autoComplete="new-password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          placeholder="At least 8 characters"
+          placeholder={dict.auth.passwordHint}
+          dir="ltr"
         />
       </div>
       {error && <p className="form-error">{error}</p>}
       <button type="submit" className="btn-primary" disabled={busy}>
-        {busy ? 'Creating account…' : 'Sign up →'}
+        {busy ? dict.auth.signingUp : dict.auth.signupBtn}
       </button>
       <p className="panel-note">
-        Already have an account? <Link href="/login">Log in</Link>.
+        {dict.auth.haveAccount} <Link href="/login">{dict.auth.loginTitle}</Link>
       </p>
     </form>
   );

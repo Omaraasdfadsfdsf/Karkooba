@@ -3,18 +3,18 @@
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
+import { useI18n } from '@/components/I18nProvider';
 import { createClient } from '@/lib/supabase/client';
 
 export default function LoginForm() {
+  const { dict } = useI18n();
   const router = useRouter();
   const params = useSearchParams();
   const next = params.get('next') || '/';
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(
-    params.get('error') === 'confirm'
-      ? 'That confirmation link did not work. Try logging in, or sign up again.'
-      : null
+    params.get('error') === 'confirm' ? dict.auth.confirmFailed : null
   );
   const [busy, setBusy] = useState(false);
 
@@ -30,8 +30,8 @@ export default function LoginForm() {
     if (signInError || !data.user) {
       setError(
         signInError?.message === 'Invalid login credentials'
-          ? "Email or password is off. Like a chair with three legs, it doesn't quite work."
-          : signInError?.message || 'Could not log in right now. Try again in a moment.'
+          ? dict.auth.badCredentials
+          : signInError?.message || dict.auth.loginFailed
       );
       setBusy(false);
       return;
@@ -49,7 +49,7 @@ export default function LoginForm() {
   return (
     <form onSubmit={onSubmit}>
       <div className="field">
-        <label htmlFor="email">Email</label>
+        <label htmlFor="email">{dict.auth.email}</label>
         <input
           id="email"
           type="email"
@@ -58,10 +58,11 @@ export default function LoginForm() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="you@example.com"
+          dir="ltr"
         />
       </div>
       <div className="field">
-        <label htmlFor="password">Password</label>
+        <label htmlFor="password">{dict.auth.password}</label>
         <input
           id="password"
           type="password"
@@ -70,14 +71,15 @@ export default function LoginForm() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder="••••••••"
+          dir="ltr"
         />
       </div>
       {error && <p className="form-error">{error}</p>}
       <button type="submit" className="btn-primary" disabled={busy}>
-        {busy ? 'Logging in…' : 'Log in →'}
+        {busy ? dict.auth.loggingIn : dict.auth.loginBtn}
       </button>
       <p className="panel-note">
-        New around here? <Link href="/signup">Create an account</Link> — it takes a minute.
+        {dict.auth.noAccount} <Link href="/signup">{dict.auth.createAccount}</Link>
       </p>
     </form>
   );

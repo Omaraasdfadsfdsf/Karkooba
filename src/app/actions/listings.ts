@@ -35,8 +35,16 @@ export async function createListing(formData: FormData): Promise<ListingActionRe
   const price_aed = /^\d+$/.test(priceRaw) ? parseInt(priceRaw, 10) : NaN;
   const category = String(formData.get('category') ?? '');
   const emirate = String(formData.get('emirate') ?? '');
+  const condition = String(formData.get('condition') ?? '');
 
-  const validationError = validateListing({ title, description, price_aed, category, emirate });
+  const validationError = validateListing({
+    title,
+    description,
+    price_aed,
+    category,
+    emirate,
+    condition,
+  });
   if (validationError) return { error: validationError };
 
   const photos = formData
@@ -56,7 +64,7 @@ export async function createListing(formData: FormData): Promise<ListingActionRe
 
   const { data: listing, error: insertError } = await supabase
     .from('listings')
-    .insert({ owner_id: user.id, title, description, price_aed, category, emirate })
+    .insert({ owner_id: user.id, title, description, price_aed, category, emirate, condition })
     .select('id, title')
     .single();
   if (insertError || !listing) {

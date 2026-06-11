@@ -1,19 +1,16 @@
 import type { Metadata } from 'next';
 import SignupForm from './SignupForm';
+import { getDict } from '@/lib/i18n/server';
 
-export const metadata: Metadata = {
-  title: 'Sign up',
-  description: 'Join KARKOOBA and turn your clutter into dirhams.',
-};
+export const metadata: Metadata = { title: 'Sign up' };
 
-export default function SignupPage() {
+export default async function SignupPage() {
+  const { dict } = await getDict();
   return (
     <div className="panel-wrap">
       <div className="panel">
-        <h1>Join the pile</h1>
-        <p className="sub">
-          One account, endless decluttering. Sign up and start selling in minutes.
-        </p>
+        <h1>{dict.auth.signupTitle}</h1>
+        <p className="sub">{dict.auth.signupSub}</p>
         <SignupForm />
       </div>
     </div>

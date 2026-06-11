@@ -2,8 +2,11 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useState } from 'react';
+import Icon from '@/components/Icon';
+import { useI18n } from '@/components/I18nProvider';
 
 function SearchBoxInner() {
+  const { dict } = useI18n();
   const router = useRouter();
   const params = useSearchParams();
   const [q, setQ] = useState(params.get('q') ?? '');
@@ -22,10 +25,12 @@ function SearchBoxInner() {
         type="text"
         value={q}
         onChange={(e) => setQ(e.target.value)}
-        placeholder="Search the junk pile... old fans, broken chairs, mystery cables"
-        aria-label="Search listings"
+        placeholder={dict.nav.searchPlaceholder}
+        aria-label={dict.nav.search}
       />
-      <button type="submit">Search</button>
+      <button type="submit" aria-label={dict.nav.search}>
+        <Icon name="search" />
+      </button>
     </form>
   );
 }
@@ -35,8 +40,7 @@ export default function SearchBox() {
     <Suspense
       fallback={
         <div className="searchwrap">
-          <input type="text" placeholder="Search the junk pile..." aria-label="Search listings" disabled />
-          <button type="button">Search</button>
+          <input type="text" disabled aria-hidden="true" />
         </div>
       }
     >

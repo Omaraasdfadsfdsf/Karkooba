@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
+import { useI18n } from '@/components/I18nProvider';
 import { CATEGORIES, EMIRATES } from '@/lib/constants';
 
 function buildHref(params: URLSearchParams, key: string, value: string): string {
@@ -14,6 +15,7 @@ function buildHref(params: URLSearchParams, key: string, value: string): string 
 }
 
 function FilterBarInner() {
+  const { dict } = useI18n();
   const router = useRouter();
   const params = useSearchParams();
   const activeCat = params.get('cat') ?? '';
@@ -26,9 +28,9 @@ function FilterBarInner() {
 
   return (
     <>
-      <div className="filters" role="group" aria-label="Filter by category">
+      <div className="filters" role="group" aria-label={dict.filters.all}>
         <Link href={buildHref(params, 'cat', '')} className={`chip ${activeCat === '' ? 'active' : ''}`}>
-          All
+          {dict.filters.all}
         </Link>
         {CATEGORIES.map((c) => (
           <Link
@@ -36,7 +38,7 @@ function FilterBarInner() {
             href={buildHref(params, 'cat', activeCat === c.id ? '' : c.id)}
             className={`chip ${activeCat === c.id ? 'active' : ''}`}
           >
-            {c.emoji} {c.label}
+            {dict.categories[c.id]}
           </Link>
         ))}
       </div>
@@ -46,21 +48,21 @@ function FilterBarInner() {
             className="boardselect"
             value={activeSort}
             onChange={(e) => onSelect('sort', e.target.value === 'newest' ? '' : e.target.value)}
-            aria-label="Sort listings"
+            aria-label={dict.filters.sortNewest}
           >
-            <option value="newest">Newest first</option>
-            <option value="cheapest">Cheapest first</option>
+            <option value="newest">{dict.filters.sortNewest}</option>
+            <option value="cheapest">{dict.filters.sortCheapest}</option>
           </select>
           <select
             className="boardselect"
             value={activeEmirate}
             onChange={(e) => onSelect('emirate', e.target.value)}
-            aria-label="Filter by emirate"
+            aria-label={dict.filters.allEmirates}
           >
-            <option value="">All Emirates</option>
+            <option value="">{dict.filters.allEmirates}</option>
             {EMIRATES.map((e) => (
               <option key={e} value={e}>
-                {e}
+                {dict.emirates[e]}
               </option>
             ))}
           </select>

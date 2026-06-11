@@ -1,17 +1,21 @@
 import Link from 'next/link';
+import Icon from '@/components/Icon';
+import { getDict } from '@/lib/i18n/server';
 
-export default function NotFound() {
+export default async function NotFound() {
+  const { dict } = await getDict();
   return (
     <div className="panel-wrap">
       <div className="panel" style={{ textAlign: 'center' }}>
-        <div style={{ fontSize: '3rem' }}>🕳️</div>
-        <h1>This one got away</h1>
-        <p className="sub">
-          Either it was snapped up, the seller pulled it, or it never existed. Junk moves fast
-          around here.
-        </p>
+        <div className="empty" style={{ border: 'none', background: 'transparent', padding: '20px 0' }}>
+          <div className="big">
+            <Icon name="box" size={28} />
+          </div>
+          <h3>{dict.notFound.title}</h3>
+          <p>{dict.notFound.sub}</p>
+        </div>
         <Link href="/" className="btn-post">
-          Back to the pile
+          {dict.notFound.back}
         </Link>
       </div>
     </div>
