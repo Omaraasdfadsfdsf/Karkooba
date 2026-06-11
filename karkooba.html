@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KARKOOBA — One man's junk, another man's jackpot</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Grotesk:wght@400;500;700&family=Cairo:wght@700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#16140f;
+    --paper:#fdfbf4;
+    --card:#ffffff;
+    --yellow:#ffc91f;
+    --yellow-dark:#e6ae00;
+    --red:#e23a2e;
+    --green:#1d7a4f;
+    --line:#16140f;
+    --muted:#7a766b;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:'Space Grotesk',system-ui,sans-serif;
+    background:var(--paper);
+    color:var(--ink);
+    min-height:100vh;
+  }
+  @media (prefers-reduced-motion: reduce){
+    *,*::before,*::after{animation:none!important;transition:none!important}
+  }
+
+  /* ---------- header ---------- */
+  header{
+    position:sticky;top:0;z-index:50;
+    background:var(--ink);
+    color:var(--paper);
+    border-bottom:4px solid var(--yellow);
+  }
+  .header-inner{
+    max-width:1200px;margin:0 auto;
+    display:flex;align-items:center;gap:16px;
+    padding:14px 20px;flex-wrap:wrap;
+  }
+  .logo{display:flex;align-items:baseline;gap:10px;cursor:pointer;user-select:none}
+  .logo h1{
+    font-family:'Archivo Black',sans-serif;
+    font-size:1.7rem;letter-spacing:1px;color:var(--yellow);
+    text-transform:uppercase;line-height:1;
+  }
+  .logo .ar{
+    font-family:'Cairo',sans-serif;font-size:1.05rem;color:var(--paper);
+    opacity:.85;
+  }
+  .searchwrap{
+    flex:1;min-width:220px;display:flex;
+    border:2px solid var(--paper);background:var(--paper);
+  }
+  .searchwrap input{
+    flex:1;border:none;outline:none;padding:10px 14px;
+    font-family:inherit;font-size:.95rem;background:transparent;color:var(--ink);
+  }
+  .searchwrap button{
+    border:none;background:var(--yellow);padding:0 18px;cursor:pointer;
+    font-family:'Archivo Black',sans-serif;font-size:.8rem;letter-spacing:.5px;
+  }
+  .btn-post{
+    background:var(--yellow);color:var(--ink);
+    border:2px solid var(--yellow);
+    font-family:'Archivo Black',sans-serif;font-size:.85rem;
+    letter-spacing:.5px;text-transform:uppercase;
+    padding:11px 20px;cursor:pointer;
+    box-shadow:4px 4px 0 rgba(255,201,31,.35);
+    transition:transform .1s ease;
+  }
+  .btn-post:hover{transform:translate(-2px,-2px)}
+  .btn-post:focus-visible,.searchwrap button:focus-visible{outline:3px solid var(--paper);outline-offset:2px}
+
+  /* ---------- ticker ---------- */
+  .ticker{
+    background:var(--yellow);
+    border-bottom:2px solid var(--ink);
+    overflow:hidden;white-space:nowrap;
+    font-weight:700;font-size:.85rem;padding:7px 0;
+  }
+  .ticker-track{display:inline-block;animation:scroll 35s linear infinite}
+  .ticker span{margin:0 28px;text-transform:uppercase;letter-spacing:.5px}
+  @keyframes scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+  /* ---------- hero ---------- */
+  .hero{
+    max-width:1200px;margin:0 auto;
+    padding:46px 20px 30px;
+    display:flex;flex-wrap:wrap;align-items:flex-end;gap:24px;justify-content:space-between;
+  }
+  .hero h2{
+    font-family:'Archivo Black',sans-serif;
+    font-size:clamp(1.9rem,5vw,3.4rem);
+    line-height:1.02;text-transform:uppercase;max-width:640px;
+  }
+  .hero h2 .stamp{
+    display:inline-block;background:var(--red);color:#fff;
+    padding:2px 14px;transform:rotate(-2deg);
+  }
+  .hero p{margin-top:12px;color:var(--muted);max-width:520px;font-size:1rem}
+  .hero-stats{display:flex;gap:14px}
+  .stat-tag{
+    background:var(--card);border:2px solid var(--ink);
+    padding:10px 16px;text-align:center;
+    box-shadow:4px 4px 0 var(--ink);
+    transform:rotate(1.5deg);
+  }
+  .stat-tag:nth-child(2){transform:rotate(-1.5deg)}
+  .stat-tag b{font-family:'Archivo Black',sans-serif;font-size:1.3rem;display:block}
+  .stat-tag small{font-size:.7rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted)}
+
+  /* ---------- filters ---------- */
+  .filters{
+    max-width:1200px;margin:0 auto;padding:0 20px 8px;
+    display:flex;flex-wrap:wrap;gap:10px;align-items:center;
+  }
+  .chip{
+    border:2px solid var(--ink);background:var(--card);
+    padding:7px 16px;font-family:inherit;font-weight:700;font-size:.82rem;
+    cursor:pointer;text-transform:uppercase;letter-spacing:.4px;
+    transition:background .12s,color .12s;
+  }
+  .chip:hover{background:#f1ecdd}
+  .chip.active{background:var(--ink);color:var(--yellow)}
+  .chip:focus-visible{outline:3px solid var(--red);outline-offset:2px}
+  select.emirate{
+    border:2px solid var(--ink);background:var(--card);
+    padding:8px 12px;font-family:inherit;font-weight:700;font-size:.82rem;
+    cursor:pointer;margin-left:auto;
+  }
+  /* ---------- grid ---------- */
+  .grid{
+    max-width:1200px;margin:0 auto;
+    padding:18px 20px 70px;
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:22px;
+  }
+  .card{
+    background:var(--card);
+    border:2px solid var(--ink);
+    box-shadow:5px 5px 0 var(--ink);
+    cursor:pointer;position:relative;
+    display:flex;flex-direction:column;
+    transition:transform .12s ease,box-shadow .12s ease;
+  }
+  .card:hover{transform:translate(-3px,-3px);box-shadow:8px 8px 0 var(--ink)}
+  .card:focus-visible{outline:4px solid var(--red);outline-offset:3px}
+  .card-img{
+    height:140px;display:flex;align-items:center;justify-content:center;
+    font-size:4rem;background:repeating-linear-gradient(45deg,#f6f2e6,#f6f2e6 12px,#efe9d8 12px,#efe9d8 24px);
+    border-bottom:2px solid var(--ink);
+  }
+  .price-sticker{
+    position:absolute;top:-12px;right:-10px;
+    background:var(--yellow);border:2px solid var(--ink);
+    font-family:'Archivo Black',sans-serif;font-size:.95rem;
+    padding:6px 12px;transform:rotate(6deg);
+    box-shadow:2px 2px 0 var(--ink);
+  }
+  .price-sticker.free{background:var(--red);color:#fff}
+  .card-body{padding:14px 14px 12px;display:flex;flex-direction:column;gap:6px;flex:1}
+  .card-body h3{font-size:1rem;font-weight:700;line-height:1.25}
+  .card-meta{font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:auto;display:flex;justify-content:space-between;gap:8px}
+  .badge-mine{
+    position:absolute;top:8px;left:8px;background:var(--green);color:#fff;
+    font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.6px;
+    padding:3px 8px;border:2px solid var(--ink);
+  }
+
+  .empty{
+    grid-column:1/-1;text-align:center;padding:70px 20px;
+    border:2px dashed var(--ink);background:var(--card);
+  }
+  .empty .big{font-size:3rem}
+  .empty h3{font-family:'Archivo Black',sans-serif;text-transform:uppercase;margin:10px 0 6px}
+  .empty p{color:var(--muted)}
+
+  /* ---------- modal ---------- */
+  .overlay{
+    position:fixed;inset:0;background:rgba(22,20,15,.6);
+    display:none;align-items:flex-start;justify-content:center;
+    padding:40px 16px;z-index:100;overflow-y:auto;
+  }
+  .overlay.open{display:flex}
+  .modal{
+    background:var(--card);border:3px solid var(--ink);
+    box-shadow:8px 8px 0 var(--ink);
+    width:100%;max-width:520px;padding:26px;position:relative;
+  }
+  .modal h2{font-family:'Archivo Black',sans-serif;text-transform:uppercase;font-size:1.3rem;margin-bottom:4px}
+  .modal .sub{color:var(--muted);font-size:.85rem;margin-bottom:18px}
+  .close-x{
+    position:absolute;top:10px;right:10px;border:2px solid var(--ink);
+    background:var(--card);width:34px;height:34px;cursor:pointer;
+    font-weight:700;font-size:1rem;line-height:1;
+  }
+  .close-x:hover{background:var(--red);color:#fff}
+  .field{margin-bottom:14px}
+  .field label{display:block;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px}
+  .field input,.field select,.field textarea{
+    width:100%;border:2px solid var(--ink);padding:10px 12px;
+    font-family:inherit;font-size:.92rem;background:var(--paper);
+  }
+  .field textarea{resize:vertical;min-height:80px}
+  .field input:focus,.field select:focus,.field textarea:focus{outline:3px solid var(--yellow)}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .emoji-picker{display:flex;flex-wrap:wrap;gap:6px}
+  .emoji-picker button{
+    font-size:1.4rem;border:2px solid transparent;background:var(--paper);
+    width:44px;height:44px;cursor:pointer;
+  }
+  .emoji-picker button.sel{border-color:var(--ink);background:var(--yellow)}
+  .btn-primary{
+    width:100%;background:var(--ink);color:var(--yellow);
+    font-family:'Archivo Black',sans-serif;text-transform:uppercase;
+    letter-spacing:1px;font-size:.95rem;border:none;padding:14px;cursor:pointer;margin-top:6px;
+  }
+  .btn-primary:hover{background:#000}
+  .btn-primary:disabled{opacity:.5;cursor:wait}
+  .form-error{color:var(--red);font-size:.82rem;font-weight:700;margin-top:8px;display:none}
+
+  /* ---------- detail modal ---------- */
+  .detail-img{
+    font-size:5rem;text-align:center;padding:30px 0;
+    background:repeating-linear-gradient(45deg,#f6f2e6,#f6f2e6 12px,#efe9d8 12px,#efe9d8 24px);
+    border:2px solid var(--ink);margin-bottom:16px;
+  }
+  .detail-price{
+    display:inline-block;background:var(--yellow);border:2px solid var(--ink);
+    font-family:'Archivo Black',sans-serif;font-size:1.4rem;padding:6px 18px;
+    transform:rotate(-2deg);box-shadow:3px 3px 0 var(--ink);margin-bottom:14px;
+  }
+  .detail-price.free{background:var(--red);color:#fff}
+  .detail-meta{font-size:.8rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px}
+  .detail-desc{font-size:.95rem;line-height:1.55;margin-bottom:18px;white-space:pre-wrap}
+  .btn-wa{
+    display:flex;align-items:center;justify-content:center;gap:8px;
+    width:100%;background:var(--green);color:#fff;text-decoration:none;
+    font-family:'Archivo Black',sans-serif;text-transform:uppercase;letter-spacing:1px;
+    font-size:.9rem;padding:14px;border:2px solid var(--ink);
+  }
+  .btn-wa:hover{filter:brightness(1.1)}
+  .btn-delete{
+    width:100%;margin-top:10px;background:var(--card);color:var(--red);
+    border:2px solid var(--red);font-family:inherit;font-weight:700;
+    text-transform:uppercase;letter-spacing:.5px;font-size:.8rem;padding:11px;cursor:pointer;
+  }
+  .btn-delete:hover{background:var(--red);color:#fff}
+
+  .toast{
+    position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(120px);
+    background:var(--ink);color:var(--yellow);font-weight:700;
+    padding:13px 24px;border:2px solid var(--yellow);z-index:200;
+    transition:transform .25s ease;font-size:.9rem;
+  }
+  .toast.show{transform:translateX(-50%) translateY(0)}
+
+  footer{
+    background:var(--ink);color:var(--paper);text-align:center;
+    padding:26px 20px;font-size:.8rem;
+  }
+  footer b{color:var(--yellow);font-family:'Archivo Black',sans-serif;letter-spacing:1px}
+
+  @media(max-width:640px){
+    .hero{padding-top:30px}
+    .hero-stats{width:100%}
+    .stat-tag{flex:1}
+    select.emirate{margin-left:0;width:100%}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="logo" onclick="resetView()" title="Back to all listings">
+      <h1>Karkooba</h1><span class="ar">كركوبة</span>
+    </div>
+    <div class="searchwrap">
+      <input id="searchInput" type="text" placeholder="Search the junk pile... old fans, broken chairs, mystery cables" aria-label="Search listings">
+      <button onclick="applyFilters()">Search</button>
+    </div>
+    <button class="btn-post" onclick="openPostModal()">+ Sell your karkooba</button>
+  </div>
+</header>
+
+<div class="ticker" aria-hidden="true"><div class="ticker-track" id="tickerTrack"></div></div>
+
+<section class="hero">
+  <div>
+    <h2>One man's junk.<br>Another man's <span class="stamp">jackpot.</span></h2>
+    <p>That dusty thing in your storage room? Someone in the UAE actually wants it. List it for cheap, free up space, make a few dirhams. Everything here is under-loved and over-discounted.</p>
+  </div>
+  <div class="hero-stats">
+    <div class="stat-tag"><b id="statCount">0</b><small>items listed</small></div>
+    <div class="stat-tag"><b id="statCheapest">—</b><small>cheapest find</small></div>
+  </div>
+</section>
+
+<div class="filters" id="categoryChips" role="group" aria-label="Filter by category"></div>
+<div class="filters">
+  <button class="chip" id="mineChip" onclick="toggleMine()">My listings</button>
+  <select class="emirate" id="emirateFilter" onchange="applyFilters()" aria-label="Filter by emirate">
+    <option value="">All Emirates</option>
+  </select>
+</div>
+
+<main class="grid" id="grid" aria-live="polite"></main>
+
+<!-- POST MODAL -->
+<div class="overlay" id="postOverlay" role="dialog" aria-modal="true" aria-labelledby="postTitle">
+  <div class="modal">
+    <button class="close-x" onclick="closeModals()" aria-label="Close">✕</button>
+    <h2 id="postTitle">Sell your karkooba</h2>
+    <p class="sub">Don't overthink it. If it works (or almost works), someone wants it.</p>
+    <div class="field">
+      <label for="fTitle">What is it?</label>
+      <input id="fTitle" maxlength="60" placeholder="e.g. Old desk fan — loud but loyal">
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label for="fPrice">Price (AED) — 0 = free</label>
+        <input id="fPrice" type="number" min="0" max="999" placeholder="15">
+      </div>
+      <div class="field">
+        <label for="fCategory">Category</label>
+        <select id="fCategory"></select>
+      </div>
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label for="fEmirate">Emirate</label>
+        <select id="fEmirate"></select>
+      </div>
+      <div class="field">
+        <label for="fPhone">WhatsApp number</label>
+        <input id="fPhone" placeholder="0501234567">
+      </div>
+    </div>
+    <div class="field">
+      <label>Pick an icon for it</label>
+      <div class="emoji-picker" id="emojiPicker"></div>
+    </div>
+    <div class="field">
+      <label for="fDesc">Honest description (flaws welcome)</label>
+      <textarea id="fDesc" maxlength="400" placeholder="Missing one wheel. Squeaks in a friendly way. Pickup only."></textarea>
+    </div>
+    <p class="form-error" id="formError"></p>
+    <button class="btn-primary" id="btnSubmit" onclick="submitListing()">Post it →</button>
+  </div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="overlay" id="detailOverlay" role="dialog" aria-modal="true">
+  <div class="modal" id="detailContent"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<footer>
+  <b>KARKOOBA</b> · كركوبة · Where the UAE's forgotten things find new homes. Nothing here is fancy — that's the point.
+</footer>
+
+<script>
+const CATEGORIES = [
+  {id:'electronics', label:'Electronics', emoji:'🔌'},
+  {id:'furniture',   label:'Furniture',   emoji:'🪑'},
+  {id:'kitchen',     label:'Kitchen',     emoji:'🍳'},
+  {id:'tools',       label:'Tools',       emoji:'🔧'},
+  {id:'books',       label:'Books & Media', emoji:'📚'},
+  {id:'kids',        label:'Kids & Toys', emoji:'🧸'},
+  {id:'misc',        label:'Mystery / Misc', emoji:'❓'},
+];
+const EMIRATES = ['Dubai','Abu Dhabi','Sharjah','Ajman','Ras Al Khaimah','Fujairah','Umm Al Quwain'];
+const EMOJIS = ['🔌','🪑','🍳','🔧','📚','🧸','📦','🖥️','📻','💡','🛏️','🚲','🧯','🪞','⏰','🎸','🪣','🧲','📺','🛠️'];
+
+const STORE_KEY = 'karkooba-listings-v1';
+let listings = [];
+let me = null;
+let filterCat = '';
+let filterEmirate = '';
+let filterSearch = '';
+let showMine = false;
+let selectedEmoji = '📦';
+
+const SEED = [
+  {title:'Desk fan — loud but loyal', price:10, cat:'electronics', emirate:'Ajman', emoji:'🔌', desc:'Works on speed 2 and 3 only. Speed 1 is a mystery. Cools well. Pickup from Al Nuaimiya.', phone:'971500000001'},
+  {title:'Plastic chair, slightly heroic', price:5, cat:'furniture', emirate:'Sharjah', emoji:'🪑', desc:'Has survived 4 summers on a balcony. One leg is shorter, just fold a napkin under it.', phone:'971500000002'},
+  {title:'Box of mystery cables', price:8, cat:'electronics', emirate:'Dubai', emoji:'📦', desc:'At least 30 cables. USB, HDMI, and several from civilizations unknown. One of them is definitely the one you need.', phone:'971500000003'},
+  {title:'Non-stick pan (stick edition)', price:7, cat:'kitchen', emirate:'Abu Dhabi', emoji:'🍳', desc:'The coating retired in 2023. Still great for boiling water and building arm strength.', phone:'971500000004'},
+  {title:'Hammer with character', price:12, cat:'tools', emirate:'Ajman', emoji:'🔧', desc:'Handle re-taped twice. Hits nails like it has something to prove.', phone:'971500000005'},
+  {title:'IELTS books, barely opened', price:15, cat:'books', emirate:'Dubai', emoji:'📚', desc:'I passed using YouTube instead. Books are basically new. My loss, your gain.', phone:'971500000006'},
+  {title:'Kids tricycle, fast(ish)', price:20, cat:'kids', emirate:'Sharjah', emoji:'🚲', desc:'Front wheel slightly bent — adds drift capability. Kid outgrew it in 3 months.', phone:'971500000007'},
+  {title:'Alarm clock you will hate', price:0, cat:'misc', emirate:'Ras Al Khaimah', emoji:'⏰', desc:'FREE. Loudest alarm known to man. Snooze button broken, which honestly might be a feature.', phone:'971500000008'},
+];
+
+// ---------- storage ----------
+async function loadListings(){
+  try{
+    const res = await window.storage.get(STORE_KEY, true);
+    listings = JSON.parse(res.value);
+  }catch(e){
+    // first run — seed demo data
+    listings = SEED.map((s,i)=>({...s, id:'seed_'+i, owner:'seed', created:Date.now()-(i+1)*86400000}));
+    try{ await window.storage.set(STORE_KEY, JSON.stringify(listings), true); }catch(err){ console.error('seed save failed', err); }
+  }
+}
+async function saveListings(){
+  try{
+    await window.storage.set(STORE_KEY, JSON.stringify(listings), true);
+    return true;
+  }catch(e){
+    console.error('save failed', e);
+    return false;
+  }
+}
+async function loadMe(){
+  try{
+    const res = await window.storage.get('karkooba-me');
+    me = JSON.parse(res.value);
+  }catch(e){
+    me = {id:'u_'+Math.random().toString(36).slice(2,10)};
+    try{ await window.storage.set('karkooba-me', JSON.stringify(me)); }catch(err){ console.error(err); }
+  }
+}
+
+// ---------- rendering ----------
+function fmtPrice(p){ return p===0 ? 'FREE' : 'AED '+p; }
+function catLabel(id){ const c=CATEGORIES.find(c=>c.id===id); return c?c.label:'Misc'; }
+function esc(s){ const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+
+function renderChips(){
+  const wrap = document.getElementById('categoryChips');
+  wrap.innerHTML = '';
+  const all = document.createElement('button');
+  all.className = 'chip'+(filterCat===''?' active':'');
+  all.textContent = 'All';
+  all.onclick = ()=>{ filterCat=''; render(); };
+  wrap.appendChild(all);
+  CATEGORIES.forEach(c=>{
+    const b = document.createElement('button');
+    b.className = 'chip'+(filterCat===c.id?' active':'');
+    b.textContent = c.emoji+' '+c.label;
+    b.onclick = ()=>{ filterCat = (filterCat===c.id?'':c.id); render(); };
+    wrap.appendChild(b);
+  });
+  document.getElementById('mineChip').className = 'chip'+(showMine?' active':'');
+}
+
+function renderGrid(){
+  const grid = document.getElementById('grid');
+  let items = listings.slice().sort((a,b)=>b.created-a.created);
+  if(filterCat) items = items.filter(i=>i.cat===filterCat);
+  if(filterEmirate) items = items.filter(i=>i.emirate===filterEmirate);
+  if(showMine && me) items = items.filter(i=>i.owner===me.id);
+  if(filterSearch){
+    const q = filterSearch.toLowerCase();
+    items = items.filter(i=> i.title.toLowerCase().includes(q) || (i.desc||'').toLowerCase().includes(q));
+  }
+  grid.innerHTML = '';
+  if(items.length===0){
+    grid.innerHTML = `<div class="empty">
+      <div class="big">🕳️</div>
+      <h3>Nothing in this pile</h3>
+      <p>${showMine ? "You haven't listed anything yet. That broken thing in your closet is waiting." : "No items match. Try another category — or be the first to list one."}</p>
+    </div>`;
+    return;
+  }
+  items.forEach(item=>{
+    const card = document.createElement('article');
+    card.className = 'card';
+    card.tabIndex = 0;
+    card.setAttribute('role','button');
+    card.setAttribute('aria-label', item.title+', '+fmtPrice(item.price));
+    const mine = me && item.owner===me.id;
+    card.innerHTML = `
+      <div class="price-sticker ${item.price===0?'free':''}">${fmtPrice(item.price)}</div>
+      ${mine?'<div class="badge-mine">Yours</div>':''}
+      <div class="card-img">${esc(item.emoji||'📦')}</div>
+      <div class="card-body">
+        <h3>${esc(item.title)}</h3>
+        <div class="card-meta"><span>${esc(item.emirate)}</span><span>${catLabel(item.cat)}</span></div>
+      </div>`;
+    card.onclick = ()=>openDetail(item.id);
+    card.onkeydown = (e)=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); openDetail(item.id);} };
+    grid.appendChild(card);
+  });
+}
+
+function renderStats(){
+  document.getElementById('statCount').textContent = listings.length;
+  const prices = listings.map(l=>l.price);
+  const min = prices.length ? Math.min(...prices) : null;
+  document.getElementById('statCheapest').textContent = min===null ? '—' : (min===0?'FREE':'AED '+min);
+}
+
+function renderTicker(){
+  const recent = listings.slice().sort((a,b)=>b.created-a.created).slice(0,8);
+  const parts = recent.map(l=>`<span>${esc(l.emoji)} ${esc(l.title)} — ${fmtPrice(l.price)} (${esc(l.emirate)})</span>`);
+  const half = parts.join('') || '<span>Be the first to list something →</span>';
+  document.getElementById('tickerTrack').innerHTML = half + half;
+}
+
+function render(){
+  renderChips();
+  renderGrid();
+  renderStats();
+  renderTicker();
+}
+
+// ---------- filters ----------
+function applyFilters(){
+  filterSearch = document.getElementById('searchInput').value.trim();
+  filterEmirate = document.getElementById('emirateFilter').value;
+  render();
+}
+function toggleMine(){ showMine = !showMine; render(); }
+function resetView(){
+  filterCat=''; filterEmirate=''; filterSearch=''; showMine=false;
+  document.getElementById('searchInput').value='';
+  document.getElementById('emirateFilter').value='';
+  render();
+  window.scrollTo({top:0});
+}
+
+// ---------- post modal ----------
+function openPostModal(){
+  document.getElementById('postOverlay').classList.add('open');
+  document.getElementById('formError').style.display='none';
+  document.getElementById('fTitle').focus();
+}
+function closeModals(){
+  document.querySelectorAll('.overlay').forEach(o=>o.classList.remove('open'));
+}
+function buildEmojiPicker(){
+  const wrap = document.getElementById('emojiPicker');
+  wrap.innerHTML='';
+  EMOJIS.forEach(e=>{
+    const b=document.createElement('button');
+    b.type='button';
+    b.textContent=e;
+    b.className = e===selectedEmoji?'sel':'';
+    b.onclick=()=>{ selectedEmoji=e; buildEmojiPicker(); };
+    wrap.appendChild(b);
+  });
+}
+async function submitListing(){
+  const title = document.getElementById('fTitle').value.trim();
+  const price = parseInt(document.getElementById('fPrice').value,10);
+  const cat   = document.getElementById('fCategory').value;
+  const emirate = document.getElementById('fEmirate').value;
+  const phoneRaw = document.getElementById('fPhone').value.replace(/[^\d]/g,'');
+  const desc  = document.getElementById('fDesc').value.trim();
+  const err = document.getElementById('formError');
+
+  if(!title){ err.textContent='Give it a name — even "weird metal thing" works.'; err.style.display='block'; return; }
+  if(isNaN(price)||price<0){ err.textContent='Set a price in AED (0 = free).'; err.style.display='block'; return; }
+  if(price>999){ err.textContent='Over AED 999? That\'s not karkooba anymore, that\'s a luxury item.'; err.style.display='block'; return; }
+  if(phoneRaw.length<9){ err.textContent='Add a valid WhatsApp number so buyers can reach you.'; err.style.display='block'; return; }
+  err.style.display='none';
+
+  let phone = phoneRaw;
+  if(phone.startsWith('0')) phone = '971'+phone.slice(1);
+  else if(!phone.startsWith('971')) phone = '971'+phone;
+
+  const btn = document.getElementById('btnSubmit');
+  btn.disabled = true; btn.textContent = 'Posting...';
+
+  const item = {
+    id:'k_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),
+    title, price, cat, emirate, desc, phone,
+    emoji:selectedEmoji,
+    owner:me.id,
+    created:Date.now()
+  };
+  listings.push(item);
+  const ok = await saveListings();
+  btn.disabled=false; btn.textContent='Post it →';
+  if(!ok){
+    listings.pop();
+    err.textContent='Could not save right now. Try again in a moment.';
+    err.style.display='block';
+    return;
+  }
+  closeModals();
+  ['fTitle','fPrice','fPhone','fDesc'].forEach(id=>document.getElementById(id).value='');
+  showToast('Posted! Your karkooba is live 🎉');
+  render();
+}
+
+// ---------- detail ----------
+function openDetail(id){
+  const item = listings.find(l=>l.id===id);
+  if(!item) return;
+  const mine = me && item.owner===me.id;
+  const waText = encodeURIComponent(`Hi! I saw your "${item.title}" on KARKOOBA for ${fmtPrice(item.price)}. Is it still available?`);
+  const date = new Date(item.created).toLocaleDateString('en-AE',{day:'numeric',month:'short'});
+  document.getElementById('detailContent').innerHTML = `
+    <button class="close-x" onclick="closeModals()" aria-label="Close">✕</button>
+    <div class="detail-img">${esc(item.emoji||'📦')}</div>
+    <h2>${esc(item.title)}</h2>
+    <div style="margin:10px 0">
+      <span class="detail-price ${item.price===0?'free':''}">${fmtPrice(item.price)}</span>
+    </div>
+    <div class="detail-meta">${esc(item.emirate)} · ${catLabel(item.cat)} · Listed ${date}</div>
+    <div class="detail-desc">${esc(item.desc||'No description. It is what it is.')}</div>
+    ${item.owner==='seed'
+      ? '<div style="font-size:.8rem;color:var(--muted);border:2px dashed var(--ink);padding:10px;text-align:center">Demo listing — post your own to make it real!</div>'
+      : `<a class="btn-wa" href="https://wa.me/${item.phone}?text=${waText}" target="_blank" rel="noopener">💬 WhatsApp the seller</a>`}
+    ${mine||item.owner==='seed' ? `<button class="btn-delete" onclick="deleteListing('${item.id}')">🗑 Remove this listing</button>` : ''}
+  `;
+  document.getElementById('detailOverlay').classList.add('open');
+}
+async function deleteListing(id){
+  const idx = listings.findIndex(l=>l.id===id);
+  if(idx===-1) return;
+  const removed = listings.splice(idx,1)[0];
+  const ok = await saveListings();
+  if(!ok){ listings.splice(idx,0,removed); showToast('Could not delete. Try again.'); return; }
+  closeModals();
+  showToast('Listing removed.');
+  render();
+}
+
+// ---------- misc ----------
+let toastTimer;
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 2600);
+}
+
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeModals(); });
+document.getElementById('searchInput').addEventListener('input', ()=>{ filterSearch=document.getElementById('searchInput').value.trim(); render(); });
+document.querySelectorAll('.overlay').forEach(o=>{
+  o.addEventListener('click', e=>{ if(e.target===o) closeModals(); });
+});
+
+// ---------- init ----------
+(function buildSelects(){
+  const catSel = document.getElementById('fCategory');
+  CATEGORIES.forEach(c=>{ const o=document.createElement('option'); o.value=c.id; o.textContent=c.emoji+' '+c.label; catSel.appendChild(o); });
+  const emSel = document.getElementById('fEmirate');
+  const emFilter = document.getElementById('emirateFilter');
+  EMIRATES.forEach(e=>{
+    const o=document.createElement('option'); o.value=e; o.textContent=e; emSel.appendChild(o);
+    const o2=document.createElement('option'); o2.value=e; o2.textContent=e; emFilter.appendChild(o2);
+  });
+  emSel.value = 'Ajman';
+})();
+buildEmojiPicker();
+
+(async function init(){
+  await loadMe();
+  await loadListings();
+  render();
+})();
+</script>
+</body>
+</html>
