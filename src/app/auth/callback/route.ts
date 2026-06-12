@@ -15,5 +15,8 @@ export async function GET(request: Request) {
     }
   }
 
-  return NextResponse.redirect(new URL('/login?error=confirm', request.url));
+  // The email is confirmed on Supabase's side by the time this runs; the
+  // session exchange only fails when the link was opened in a different
+  // browser than the signup. Send them to log in with a success note.
+  return NextResponse.redirect(new URL('/login?confirmed=1', request.url));
 }

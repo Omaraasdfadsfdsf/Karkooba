@@ -17,6 +17,7 @@ export default function LoginForm() {
     params.get('error') === 'confirm' ? dict.auth.confirmFailed : null
   );
   const [busy, setBusy] = useState(false);
+  const justConfirmed = params.get('confirmed') === '1';
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -48,6 +49,11 @@ export default function LoginForm() {
 
   return (
     <form onSubmit={onSubmit}>
+      {justConfirmed && (
+        <p className="form-success" style={{ marginTop: 0, marginBottom: 16 }}>
+          {dict.auth.confirmedNotice}
+        </p>
+      )}
       <div className="field">
         <label htmlFor="email">{dict.auth.email}</label>
         <input
