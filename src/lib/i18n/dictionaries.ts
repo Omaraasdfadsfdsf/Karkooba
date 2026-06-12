@@ -28,6 +28,7 @@ export const en = {
     sub: "KARKOOBA is the UAE's marketplace for pre-loved finds under AED 999. List in seconds, chat in real time, sell fast.",
     statItems: 'live listings',
     statCheapest: 'best price today',
+    browse: 'Browse the finds ↓',
   },
   ticker: {
     empty: 'Be the first to list something →',
@@ -224,6 +225,7 @@ export const ar: Dict = {
     sub: 'كركوبة هو سوق الإمارات للمقتنيات المستعملة بأقل من ٩٩٩ درهم. اعرض غرضك في ثوانٍ، تواصل فورياً، وبِع بسرعة.',
     statItems: 'إعلان نشط',
     statCheapest: 'أفضل سعر اليوم',
+    browse: '↓ تصفّح المعروضات',
   },
   ticker: {
     empty: '← كن أول من يعرض غرضاً',

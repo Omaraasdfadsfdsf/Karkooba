@@ -52,7 +52,7 @@ export default async function HomePage({
       ? query.order('price_aed', { ascending: true }).order('created_at', { ascending: false })
       : query.order('created_at', { ascending: false });
 
-  const [listingsRes, statsRes, tickerRes] = await Promise.all([
+  const [listingsRes, statsRes] = await Promise.all([
     query.limit(60),
     supabase
       .from('listings')
@@ -60,64 +60,50 @@ export default async function HomePage({
       .eq('status', 'active')
       .order('price_aed', { ascending: true })
       .limit(1),
-    supabase
-      .from('listings')
-      .select('title, price_aed, emirate')
-      .eq('status', 'active')
-      .order('created_at', { ascending: false })
-      .limit(8),
   ]);
 
   const listings = (listingsRes.data ?? []) as ListingWithPhotos[];
   const totalActive = statsRes.count ?? 0;
   const cheapest = statsRes.data?.[0]?.price_aed ?? null;
-  const tickerItems = tickerRes.data ?? [];
 
   return (
     <>
-      <div className="ticker" aria-hidden="true">
-        <div className="ticker-track">
-          {[0, 1].map((half) => (
-            <span key={half} style={{ margin: 0 }}>
-              {tickerItems.length > 0 ? (
-                tickerItems.map((t, i) => (
-                  <span key={i}>
-                    {t.title} — <b className="tick-price">{fmtPriceL(t.price_aed, dict)}</b> ·{' '}
-                    {dict.emirates[t.emirate] ?? t.emirate}
-                  </span>
-                ))
-              ) : (
-                <span>{dict.ticker.empty}</span>
-              )}
-            </span>
-          ))}
-        </div>
+      {/* Landing view: hero + categories fill the first screen; the grid
+          sits below the fold and is reached by scrolling or picking a category. */}
+      <div className={hasFilters ? undefined : 'landing-wrap'}>
+        <section className="hero">
+          <div>
+            <h1>
+              {dict.hero.title1}
+              <br />
+              <span className="grad-text">{dict.hero.title2}</span>
+            </h1>
+            <p>{dict.hero.sub}</p>
+          </div>
+          <div className="hero-stats">
+            <div className="stat-tag">
+              <b>{totalActive}</b>
+              <small>{dict.hero.statItems}</small>
+            </div>
+            <div className="stat-tag">
+              <b>{cheapest === null ? '—' : fmtPriceL(cheapest, dict)}</b>
+              <small>{dict.hero.statCheapest}</small>
+            </div>
+          </div>
+        </section>
+
+        <FilterBar />
+
+        {!hasFilters && (
+          <div className="filters" style={{ paddingTop: 18 }}>
+            <a href="#listings" className="btn-post">
+              {dict.hero.browse}
+            </a>
+          </div>
+        )}
       </div>
 
-      <section className="hero">
-        <div>
-          <h1>
-            {dict.hero.title1}
-            <br />
-            <span className="grad-text">{dict.hero.title2}</span>
-          </h1>
-          <p>{dict.hero.sub}</p>
-        </div>
-        <div className="hero-stats">
-          <div className="stat-tag">
-            <b>{totalActive}</b>
-            <small>{dict.hero.statItems}</small>
-          </div>
-          <div className="stat-tag">
-            <b>{cheapest === null ? '—' : fmtPriceL(cheapest, dict)}</b>
-            <small>{dict.hero.statCheapest}</small>
-          </div>
-        </div>
-      </section>
-
-      <FilterBar />
-
-      <main className="listing-grid" aria-live="polite">
+      <main id="listings" className="listing-grid" aria-live="polite">
         {listings.length === 0 ? (
           <div className="empty">
             <div className="big">

@@ -11,7 +11,8 @@ function buildHref(params: URLSearchParams, key: string, value: string): string 
   if (value) next.set(key, value);
   else next.delete(key);
   const qs = next.toString();
-  return qs ? `/?${qs}` : '/';
+  // Land on the listings grid, past the landing hero.
+  return (qs ? `/?${qs}` : '/') + '#listings';
 }
 
 function FilterBarInner() {
@@ -29,14 +30,14 @@ function FilterBarInner() {
   return (
     <>
       <div className="filters" role="group" aria-label={dict.filters.all}>
-        <Link href={buildHref(params, 'cat', '')} className={`chip ${activeCat === '' ? 'active' : ''}`}>
+        <Link href={buildHref(params, 'cat', '')} className={`cat-box ${activeCat === '' ? 'active' : ''}`}>
           {dict.filters.all}
         </Link>
         {CATEGORIES.map((c) => (
           <Link
             key={c.id}
             href={buildHref(params, 'cat', activeCat === c.id ? '' : c.id)}
-            className={`chip ${activeCat === c.id ? 'active' : ''}`}
+            className={`cat-box ${activeCat === c.id ? 'active' : ''}`}
           >
             {dict.categories[c.id]}
           </Link>
