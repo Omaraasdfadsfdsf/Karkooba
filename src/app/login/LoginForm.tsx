@@ -86,6 +86,8 @@ export default function LoginForm() {
       </button>
       <p className="panel-note">
         {dict.auth.noAccount} <Link href="/signup">{dict.auth.createAccount}</Link>
+        {' · '}
+        <Link href="/forgot-password">{dict.auth.forgotLink}</Link>
       </p>
     </form>
   );

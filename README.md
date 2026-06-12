@@ -37,6 +37,9 @@ Built with Next.js (App Router) + TypeScript + Tailwind CSS, backed by Supabase
    read receipts, and enables Realtime delivery for messages.
 5. Run [`supabase/migrations/0003_condition.sql`](supabase/migrations/0003_condition.sql)
    the same way. This adds the item condition field (Like new / Good / Well used / For parts).
+6. Run [`supabase/migrations/0004_reports_limits.sql`](supabase/migrations/0004_reports_limits.sql)
+   the same way. This adds listing reports (for the /admin moderation dashboard) and the
+   indexes behind the anti-spam rate limits.
 4. Grab your credentials from **Project Settings → API**:
    - **Project URL** → `NEXT_PUBLIC_SUPABASE_URL`
    - **anon / public key** → `NEXT_PUBLIC_SUPABASE_ANON_KEY`

@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { notFound, redirect } from 'next/navigation';
 import Icon from '@/components/Icon';
 import PhotoGallery from '@/components/PhotoGallery';
+import ReportButton from '@/components/ReportButton';
 import { startConversation } from '@/app/actions/chat';
 import { t } from '@/lib/i18n/dictionaries';
 import { getDict } from '@/lib/i18n/server';
@@ -162,6 +163,7 @@ export default async function ListingPage({
                 {dict.detail.yourListing} <a href="/my-listings">{dict.nav.myListings}</a>.
               </p>
             )}
+            {!isMine && user && <ReportButton listingId={listing.id} />}
           </div>
         </div>
       </div>

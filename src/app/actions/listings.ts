@@ -9,6 +9,7 @@ import { validateListing } from '@/lib/validation';
 
 const ALLOWED_PHOTO_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const MAX_PHOTO_BYTES = 4.5 * 1024 * 1024;
+const MAX_LISTINGS_PER_DAY = 10;
 
 export interface ListingActionResult {
   error: string;
@@ -46,6 +47,19 @@ export async function createListing(formData: FormData): Promise<ListingActionRe
     condition,
   });
   if (validationError) return { error: validationError };
+
+  // Anti-spam: cap how many listings one account can post per day.
+  const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  const { count: recentCount } = await supabase
+    .from('listings')
+    .select('id', { count: 'exact', head: true })
+    .eq('owner_id', user.id)
+    .gte('created_at', dayAgo);
+  if ((recentCount ?? 0) >= MAX_LISTINGS_PER_DAY) {
+    return {
+      error: `Daily limit reached — you can post up to ${MAX_LISTINGS_PER_DAY} listings per day. Try again tomorrow.`,
+    };
+  }
 
   const photos = formData
     .getAll('photos')

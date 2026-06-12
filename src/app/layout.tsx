@@ -1,7 +1,9 @@
 import type { Metadata } from 'next';
 import { Unbounded, Space_Grotesk, Cairo } from 'next/font/google';
+import { Analytics } from '@vercel/analytics/react';
 import Header from '@/components/Header';
 import { I18nProvider } from '@/components/I18nProvider';
+import PwaRegister from '@/components/PwaRegister';
 import { getDict } from '@/lib/i18n/server';
 import { siteUrl } from '@/lib/utils';
 import './globals.css';
@@ -66,6 +68,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             </p>
           </footer>
         </I18nProvider>
+        <PwaRegister />
+        <Analytics />
       </body>
     </html>
   );

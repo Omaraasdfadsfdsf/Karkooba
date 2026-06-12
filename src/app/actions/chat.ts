@@ -83,6 +83,17 @@ export async function sendMessage(
   } = await supabase.auth.getUser();
   if (!user) return { error: 'Not logged in.' };
 
+  // Anti-spam: per-sender message rate limits.
+  const minuteAgo = new Date(Date.now() - 60 * 1000).toISOString();
+  const { count: lastMinute } = await supabase
+    .from('messages')
+    .select('id', { count: 'exact', head: true })
+    .eq('sender_id', user.id)
+    .gte('created_at', minuteAgo);
+  if ((lastMinute ?? 0) >= 15) {
+    return { error: 'Slow down a little — too many messages at once.' };
+  }
+
   // Was the recipient already waiting on unread messages from us?
   // If yes, skip the email — one notification per "burst" is enough.
   const { count: alreadyUnread } = await supabase

@@ -34,7 +34,8 @@ export async function middleware(request: NextRequest) {
     path.startsWith('/my-listings') ||
     path.startsWith('/welcome') ||
     path.startsWith('/messages') ||
-    path.startsWith('/settings');
+    path.startsWith('/settings') ||
+    path.startsWith('/admin');
   if (needsAuth && !user) {
     const url = request.nextUrl.clone();
     url.pathname = '/login';
